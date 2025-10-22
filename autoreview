@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Global launcher for code review automation
+# This script can be called from anywhere and will analyze the current directory
+
+# Check if CODE_REVIEW_TOOLS_DIR environment variable is set
+if [[ -z "$CODE_REVIEW_TOOLS_DIR" ]]; then
+    echo "❌ Error: CODE_REVIEW_TOOLS_DIR environment variable is not set"
+    echo ""
+    echo "Please add the following to your shell configuration (~/.bashrc, ~/.zshrc, etc.):"
+    echo "  export CODE_REVIEW_TOOLS_DIR=\"/path/to/code-review-automation\""
+    echo ""
+    echo "Then reload your shell:"
+    echo "  source ~/.bashrc  # or source ~/.zshrc"
+    exit 1
+fi
+
+# Verify the directory exists
+if [[ ! -d "$CODE_REVIEW_TOOLS_DIR" ]]; then
+    echo "❌ Error: CODE_REVIEW_TOOLS_DIR points to a non-existent directory: $CODE_REVIEW_TOOLS_DIR"
+    exit 1
+fi
+
+# Execute the main review script with all passed arguments
+exec "$CODE_REVIEW_TOOLS_DIR/review_master.sh" "$@"
