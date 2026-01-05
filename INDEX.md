@@ -3,24 +3,28 @@
 ## 📚 Documentation Guide
 
 ### Start Here
+
 - **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** - High-level overview of what was delivered
 - **[GETTING_STARTED.md](GETTING_STARTED.md)** - 5-minute quick start guide
 
 ### For Developers
+
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Command reference and common tasks
 - **[GO_IMPLEMENTATION_SUMMARY.md](GO_IMPLEMENTATION_SUMMARY.md)** - Technical architecture
 
 ### For DevOps/Maintainers
+
 - **[BUILD_AND_DEPLOY.md](BUILD_AND_DEPLOY.md)** - Detailed build instructions
 - **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment guide
 
 ### For Integration
+
 - **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)** - How to use in other repositories
 - **[SOLUTION_SUMMARY.md](SOLUTION_SUMMARY.md)** - Complete solution overview
 
 ## 🗂️ Project Structure
 
-```
+```text
 code-review-automation/
 ├── cmd/code-review/
 │   └── main.go                          # CLI entry point
@@ -55,6 +59,7 @@ code-review-automation/
 ## 🚀 Quick Commands
 
 ### Build
+
 ```bash
 make build              # Build for current platform
 make build-all          # Build for all platforms
@@ -62,6 +67,7 @@ make clean              # Clean artifacts
 ```
 
 ### Run
+
 ```bash
 code-review -t main                    # Review changed files
 code-review -t main --full-scan        # Full codebase scan
@@ -70,6 +76,7 @@ code-review -t main --email user@ex.com # Email report
 ```
 
 ### Help
+
 ```bash
 code-review --help                     # Show help
 code-review version                    # Show version
@@ -79,41 +86,51 @@ code-review config show                # Show config
 ## 📖 Documentation by Use Case
 
 ### "I want to build the binary"
+
 → Read: **BUILD_AND_DEPLOY.md**
 
 ### "I want to use it in my repository"
+
 → Read: **INTEGRATION_GUIDE.md**
 
 ### "I want to understand how it works"
+
 → Read: **GO_IMPLEMENTATION_SUMMARY.md**
 
 ### "I want to deploy it to my team"
+
 → Read: **DEPLOYMENT_CHECKLIST.md**
 
 ### "I want a quick reference"
+
 → Read: **QUICK_REFERENCE.md**
 
 ### "I want to get started quickly"
+
 → Read: **GETTING_STARTED.md**
 
 ### "I want the big picture"
+
 → Read: **EXECUTIVE_SUMMARY.md** or **SOLUTION_SUMMARY.md**
 
 ## 🎯 Common Tasks
 
 ### Build and Test
+
 ```bash
 make build
 ./bin/code-review -t main
 ```
 
 ### Create Release
+
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
 ```
 
 ### Add to Repository
+
 ```bash
 mkdir -p .github/workflows
 cp templates/github-actions-workflow.yml .github/workflows/code-review.yml
@@ -122,12 +139,13 @@ git commit -m "Add code review"
 git push
 ```
 
-### Configure Email
+### Configure Email (GitHub Secrets)
+
 ```bash
-export SMTP_HOST=smtp.gmail.com
-export SMTP_USER=your-email@gmail.com
-export SMTP_PASSWORD=your-app-password
-export FROM_EMAIL=your-email@gmail.com
+export AUTOREVIEW_SMTP_HOST=smtp.gmail.com
+export AUTOREVIEW_SMTP_USER=your-email@gmail.com
+export AUTOREVIEW_SMTP_PASSWORD=your-app-password
+export AUTOREVIEW_FROM_EMAIL=your-email@gmail.com
 ```
 
 ## 📋 Feature Checklist
@@ -146,7 +164,7 @@ export FROM_EMAIL=your-email@gmail.com
 ## 🔗 Key Files
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `cmd/code-review/main.go` | CLI entry point |
 | `internal/cmd/root.go` | Main command logic |
 | `internal/review/analyzer.go` | Code analysis |
@@ -159,17 +177,20 @@ export FROM_EMAIL=your-email@gmail.com
 ## 📞 Support
 
 ### Documentation
+
 - All guides are in markdown format
 - Located in the root directory
 - Cross-referenced for easy navigation
 
 ### Troubleshooting
+
 - See **BUILD_AND_DEPLOY.md** for build issues
 - See **INTEGRATION_GUIDE.md** for integration issues
 - See **QUICK_REFERENCE.md** for command issues
 
 ### GitHub
-- Repository: https://github.com/BrandonThomas84/code-review-automation
+
+- Repository: <https://github.com/BrandonThomas84/code-review-automation>
 - Issues: Report bugs and request features
 - Discussions: Ask questions and share ideas
 
@@ -191,7 +212,7 @@ export FROM_EMAIL=your-email@gmail.com
 - [ ] Documentation complete: 8 markdown files
 - [ ] Go code compiles: `go build ./cmd/code-review`
 
-## 🎉 You're Ready!
+## 🎉 You're Ready
 
 Everything is built, documented, and ready to use.
 
@@ -201,4 +222,3 @@ Everything is built, documented, and ready to use.
 
 **Last Updated**: 2024
 **Status**: ✅ Complete and Production Ready
-

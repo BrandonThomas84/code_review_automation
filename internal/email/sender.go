@@ -25,28 +25,64 @@ func NewSender(config Config) *Sender {
 	return &Sender{config: config}
 }
 
+// NewSenderFromEnv creates a Sender with configuration from environment variables
+func NewSenderFromEnv() *Sender {
+	return &Sender{config: Config{}}
+}
+
+// getEnvWithFallback tries the primary env var first, then falls back to the secondary
+func getEnvWithFallback(primary, fallback string) string {
+	if val := os.Getenv(primary); val != "" {
+		return val
+	}
+	if fallback != "" {
+		return os.Getenv(fallback)
+	}
+	return ""
+}
+
+// SendReport sends a formatted email report
 func (s *Sender) SendReport(report *review.Report, toEmail string) error {
-	// Get config from environment if not provided
+	return s.SendReportWithContext(report, toEmail, "", "", 0, "")
+}
+
+// SendReportWithContext sends a formatted email report with optional context
+func (s *Sender) SendReportWithContext(report *review.Report, toEmail, repoName, branchName string, prNumber int, prTitle string) error {
+	// Get config from environment if not provided (AUTOREVIEW_ prefixed for GitHub secrets)
 	if s.config.SMTPHost == "" {
-		s.config.SMTPHost = os.Getenv("SMTP_HOST")
+		s.config.SMTPHost = getEnvWithFallback("AUTOREVIEW_SMTP_HOST", "SMTP_HOST")
+	}
+	if s.config.SMTPPort == 0 {
+		s.config.SMTPPort = 587 // Default SMTP port
 	}
 	if s.config.SMTPUser == "" {
-		s.config.SMTPUser = os.Getenv("SMTP_USER")
+		s.config.SMTPUser = getEnvWithFallback("AUTOREVIEW_SMTP_USER", "SMTP_USER")
 	}
 	if s.config.SMTPPassword == "" {
-		s.config.SMTPPassword = os.Getenv("SMTP_PASSWORD")
+		s.config.SMTPPassword = getEnvWithFallback("AUTOREVIEW_SMTP_PASSWORD", "SMTP_PASSWORD")
 	}
 	if s.config.FromEmail == "" {
-		s.config.FromEmail = os.Getenv("FROM_EMAIL")
+		s.config.FromEmail = getEnvWithFallback("AUTOREVIEW_FROM_EMAIL", "FROM_EMAIL")
+	}
+	if s.config.FromName == "" {
+		s.config.FromName = getEnvWithFallback("AUTOREVIEW_FROM_NAME", "")
+		if s.config.FromName == "" {
+			s.config.FromName = "AutoReview Bot"
+		}
 	}
 
 	if s.config.SMTPHost == "" || s.config.SMTPUser == "" {
 		return fmt.Errorf("SMTP configuration not provided")
 	}
 
-	// Build email content
-	subject := fmt.Sprintf("Code Review Report - %d Issues Found", report.Summary.TotalIssues)
-	body := s.buildHTMLBody(report)
+	// Use the new formatter
+	formatter := NewFormatter().
+		WithRepo(repoName).
+		WithBranch(branchName).
+		WithPR(prNumber, prTitle)
+
+	subject := formatter.FormatSubject(report)
+	body := formatter.FormatHTML(report)
 
 	// Send email
 	auth := smtp.PlainAuth("", s.config.SMTPUser, s.config.SMTPPassword, s.config.SMTPHost)
@@ -57,54 +93,3 @@ func (s *Sender) SendReport(report *review.Report, toEmail string) error {
 
 	return smtp.SendMail(addr, auth, s.config.FromEmail, []string{toEmail}, []byte(msg))
 }
-
-func (s *Sender) buildHTMLBody(report *review.Report) string {
-	html := `
-	<html>
-	<head>
-		<style>
-			body { font-family: Arial, sans-serif; }
-			.summary { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; }
-			.high { color: #d32f2f; font-weight: bold; }
-			.medium { color: #f57c00; font-weight: bold; }
-			.low { color: #388e3c; font-weight: bold; }
-			.issue { border-left: 4px solid #ddd; padding: 10px; margin: 10px 0; }
-			.issue.high { border-left-color: #d32f2f; }
-			.issue.medium { border-left-color: #f57c00; }
-			.issue.low { border-left-color: #388e3c; }
-		</style>
-	</head>
-	<body>
-		<h2>Code Review Report</h2>
-		<div class="summary">
-			<p><strong>Files Changed:</strong> ` + fmt.Sprintf("%d", report.Summary.TotalFiles) + `</p>
-			<p><strong>Total Issues:</strong> ` + fmt.Sprintf("%d", report.Summary.TotalIssues) + `</p>
-			<p><span class="high">🔴 High: ` + fmt.Sprintf("%d", report.Summary.HighSeverity) + `</span> | 
-			   <span class="medium">🟡 Medium: ` + fmt.Sprintf("%d", report.Summary.MediumSeverity) + `</span> | 
-			   <span class="low">🟢 Low: ` + fmt.Sprintf("%d", report.Summary.LowSeverity) + `</span></p>
-		</div>
-	`
-
-	if len(report.Issues) > 0 {
-		html += `<h3>Issues Found:</h3>`
-		for _, issue := range report.Issues {
-			html += fmt.Sprintf(`
-			<div class="issue %s">
-				<strong>[%s]</strong> %s<br>
-				<small>File: <code>%s</code>`, issue.Severity, issue.Severity, issue.Message, issue.File)
-			if issue.Line > 0 {
-				html += fmt.Sprintf(` (line %d)`, issue.Line)
-			}
-			html += `</small></div>`
-		}
-	} else {
-		html += `<p style="color: #388e3c;"><strong>✅ No issues found!</strong></p>`
-	}
-
-	html += `
-	</body>
-	</html>
-	`
-	return html
-}
-

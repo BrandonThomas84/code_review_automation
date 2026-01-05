@@ -18,6 +18,7 @@ make clean
 ## Running Code Reviews
 
 ### Basic Usage
+
 ```bash
 # Review changed files against main branch
 code-review -t main
@@ -36,18 +37,20 @@ code-review -t main --json
 ```
 
 ### With Email
+
 ```bash
 # Send report to email
 code-review -t main --email user@example.com
 
-# Requires SMTP environment variables:
-export SMTP_HOST=smtp.gmail.com
-export SMTP_USER=your-email@gmail.com
-export SMTP_PASSWORD=your-app-password
-export FROM_EMAIL=your-email@gmail.com
+# Requires SMTP environment variables (AUTOREVIEW_ prefix for GitHub secrets):
+export AUTOREVIEW_SMTP_HOST=smtp.gmail.com
+export AUTOREVIEW_SMTP_USER=your-email@gmail.com
+export AUTOREVIEW_SMTP_PASSWORD=your-app-password
+export AUTOREVIEW_FROM_EMAIL=your-email@gmail.com
 ```
 
 ### Custom Output
+
 ```bash
 # Save to specific directory
 code-review -t main -o /tmp/reports
@@ -59,6 +62,7 @@ code-review -t main --json > report.json
 ## GitHub Actions Integration
 
 ### 1. Add Workflow to Your Repo
+
 ```bash
 mkdir -p .github/workflows
 cp templates/github-actions-workflow.yml {TARGET REPOSITORY}/.github/workflows/code-review.yml
@@ -69,19 +73,24 @@ git push
 ```
 
 ### 2. Configure Email (Optional)
+
 Go to repository Settings → Secrets and variables → Actions, add:
+
 - `SMTP_HOST`
 - `SMTP_USER`
 - `SMTP_PASSWORD`
 - `FROM_EMAIL`
 
 ### 3. Test
+
 Create a pull request - the workflow will run automatically!
 
 ## Workflow Customization
 
 ### Change Target Branches
+
 Edit `.github/workflows/code-review.yml`:
+
 ```yaml
 on:
   pull_request:
@@ -92,7 +101,9 @@ on:
 ```
 
 ### Fail on High Severity Issues
+
 Add to workflow:
+
 ```yaml
 - name: Check severity
   run: |
@@ -101,13 +112,14 @@ Add to workflow:
 ```
 
 ### Add Email Notification
+
 ```yaml
 - name: Send email
   env:
-    SMTP_HOST: ${{ secrets.SMTP_HOST }}
-    SMTP_USER: ${{ secrets.SMTP_USER }}
-    SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-    FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+    AUTOREVIEW_SMTP_HOST: ${{ secrets.AUTOREVIEW_SMTP_HOST }}
+    AUTOREVIEW_SMTP_USER: ${{ secrets.AUTOREVIEW_SMTP_USER }}
+    AUTOREVIEW_SMTP_PASSWORD: ${{ secrets.AUTOREVIEW_SMTP_PASSWORD }}
+    AUTOREVIEW_FROM_EMAIL: ${{ secrets.AUTOREVIEW_FROM_EMAIL }}
   run: |
     ./code-review -t ${{ github.base_ref }} \
       --email your-email@example.com
@@ -116,6 +128,7 @@ Add to workflow:
 ## Troubleshooting
 
 ### Build fails
+
 ```bash
 # Ensure Go is installed
 go version
@@ -128,6 +141,7 @@ make clean && make build
 ```
 
 ### Binary not found
+
 ```bash
 # Check current directory
 pwd
@@ -140,6 +154,7 @@ chmod +x bin/code-review
 ```
 
 ### Git diff shows no changes
+
 ```bash
 # Verify target branch exists
 git branch -a
@@ -151,6 +166,7 @@ git status
 ```
 
 ### Email not sending
+
 ```bash
 # Test SMTP credentials
 # Verify environment variables are set
@@ -200,5 +216,4 @@ code-review -t main -v --json -o ./reports --email user@example.com
 - **Build Guide**: `BUILD_AND_DEPLOY.md`
 - **Integration Guide**: `INTEGRATION_GUIDE.md`
 - **Go Summary**: `GO_IMPLEMENTATION_SUMMARY.md`
-- **GitHub Repo**: https://github.com/BrandonThomas84/code-review-automation
-
+- **GitHub Repo**: <https://github.com/BrandonThomas84/code-review-automation>

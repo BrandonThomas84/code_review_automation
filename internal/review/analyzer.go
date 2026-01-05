@@ -169,37 +169,21 @@ func (a *Analyzer) runSecurityChecks(report *Report) {
 func (a *Analyzer) runQualityChecks(report *Report) {
 	// Check for code quality issues
 	for _, file := range report.ChangedFiles {
-		if strings.HasSuffix(file, ".py") {
+		switch {
+		case strings.HasSuffix(file, ".py"):
 			a.checkPythonQuality(file, report)
-		} else if strings.HasSuffix(file, ".js") || strings.HasSuffix(file, ".ts") {
+		case strings.HasSuffix(file, ".js"), strings.HasSuffix(file, ".jsx"):
 			a.checkJavaScriptQuality(file, report)
+		case strings.HasSuffix(file, ".ts"), strings.HasSuffix(file, ".tsx"):
+			a.checkTypeScriptQuality(file, report)
+		case strings.HasSuffix(file, ".rb"):
+			a.checkRubyQuality(file, report)
+		case strings.HasSuffix(file, ".dart"):
+			a.checkDartQuality(file, report)
+		case strings.HasSuffix(file, ".php"):
+			a.checkPHPQuality(file, report)
+		case strings.HasSuffix(file, ".java"), strings.HasSuffix(file, ".kt"):
+			a.checkJavaKotlinQuality(file, report)
 		}
 	}
-}
-
-func (a *Analyzer) checkPythonQuality(file string, report *Report) {
-	filePath := filepath.Join(a.repoPath, file)
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		return
-	}
-
-	contentStr := string(content)
-	lines := strings.Split(contentStr, "\n")
-
-	for i, line := range lines {
-		if len(line) > 120 {
-			report.AddIssue(Issue{
-				Type:     "quality",
-				Severity: "low",
-				Message:  "Line too long (>120 characters)",
-				File:     file,
-				Line:     i + 1,
-			})
-		}
-	}
-}
-
-func (a *Analyzer) checkJavaScriptQuality(file string, report *Report) {
-	// Similar checks for JavaScript
 }

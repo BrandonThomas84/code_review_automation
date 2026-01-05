@@ -1,6 +1,6 @@
 module github.com/BrandonThomas84/code-review-automation
 
-go 1.21
+go 1.25
 
 require (
 	github.com/fatih/color v1.16.0

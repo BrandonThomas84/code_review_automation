@@ -60,13 +60,13 @@ If you want email notifications:
 
 - [ ] For each target repository:
   - [ ] Go to Settings → Secrets and variables → Actions
-  - [ ] Add secret: `SMTP_HOST`
-  - [ ] Add secret: `SMTP_USER`
-  - [ ] Add secret: `SMTP_PASSWORD`
-  - [ ] Add secret: `FROM_EMAIL`
+  - [ ] Add secret: `AUTOREVIEW_SMTP_HOST`
+  - [ ] Add secret: `AUTOREVIEW_SMTP_USER`
+  - [ ] Add secret: `AUTOREVIEW_SMTP_PASSWORD`
+  - [ ] Add secret: `AUTOREVIEW_FROM_EMAIL`
 
 - [ ] Update workflow to use secrets:
-  - [ ] Add environment variables section
+  - [ ] Add environment variables section with AUTOREVIEW_ prefix
   - [ ] Add email flag to code-review command
   - [ ] Test with a new PR
 
@@ -157,13 +157,13 @@ If you need to disable code reviews:
 - **Building**: BUILD_AND_DEPLOY.md
 - **Integration**: INTEGRATION_GUIDE.md
 - **Technical**: GO_IMPLEMENTATION_SUMMARY.md
-- **GitHub**: https://github.com/BrandonThomas84/code-review-automation
+- **GitHub**: <https://github.com/BrandonThomas84/code-review-automation>
 
 ## Notes
 
 Use this space to track your deployment:
 
-```
+```text
 Repository: ___________________
 Date Started: ___________________
 Date Completed: ___________________
@@ -175,4 +175,3 @@ Next Steps: ___________________
 ---
 
 **Status**: Ready for deployment ✅
-

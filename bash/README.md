@@ -7,12 +7,14 @@ Comprehensive code review automation for your projects. Run code reviews from an
 ### 1. Clone the Repository
 
 Clone this repository to your desired location:
+
 ```bash
 git clone https://github.com/your-org/code-review-automation.git
 cd code-review-automation
 ```
 
 ### 2. Run Initial Setup
+
 ```bash
 ./setup.sh
 ```
@@ -22,18 +24,21 @@ cd code-review-automation
 Add the `CODE_REVIEW_TOOLS_DIR` environment variable pointing to your cloned repository location.
 
 **For Bash (~/.bashrc):**
+
 ```bash
 echo 'export CODE_REVIEW_TOOLS_DIR="/path/to/code-review-automation"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 **For Zsh (~/.zshrc):**
+
 ```bash
 echo 'export CODE_REVIEW_TOOLS_DIR="/path/to/code-review-automation"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **For Fish (~/.config/fish/config.fish):**
+
 ```bash
 echo 'set -gx CODE_REVIEW_TOOLS_DIR "/path/to/code-review-automation"' >> ~/.config/fish/config.fish
 ```
@@ -47,6 +52,7 @@ The `-t` or `--target` flag is **required** when running autoreview. This specif
 ### 4. Verify Installation
 
 Test from any directory:
+
 ```bash
 cd /tmp
 autoreview --help
@@ -55,6 +61,7 @@ autoreview --help
 ### 5. Basic Usage
 
 Navigate to any project and run:
+
 ```bash
 autoreview -t FERN-12345-Some-title
 ```
@@ -64,6 +71,7 @@ That's it! The tool will automatically detect your project languages and run com
 ## Usage Examples
 
 ### Basic Review (Changed Files Only)
+
 ```bash
 # Review changed files with ticket/branch name
 autoreview -t FERN-12345-Some-title
@@ -76,6 +84,7 @@ autoreview -v
 ```
 
 ### Full Codebase Scan
+
 ```bash
 # Scan entire codebase instead of just changed files
 autoreview --full-scan
@@ -88,6 +97,7 @@ autoreview --full-scan -v
 ```
 
 ### Language-Specific Analysis
+
 ```bash
 # Force Ruby analysis
 autoreview -r
@@ -103,6 +113,7 @@ autoreview -r -j -f
 ```
 
 ### Output Control
+
 ```bash
 # Custom output directory
 autoreview -o /tmp/review-reports
@@ -117,14 +128,16 @@ autoreview --no-quality
 ## Features
 
 ### Automatic Language Detection
+
 - **Ruby**: Gemfile, *.rb files
-- **JavaScript/TypeScript**: package.json, *.js, *.ts, *.jsx, *.tsx files
+- **JavaScript/TypeScript**: package.json, *.js,*.ts, *.jsx,*.tsx files
 - **Flutter/Dart**: pubspec.yaml, *.dart files
 - **Python**: requirements.txt, pyproject.toml, *.py files
 - **PHP**: composer.json, *.php files
 - **Java**: pom.xml, build.gradle, *.java files
 
 ### Analysis Capabilities
+
 - **Security**: Hardcoded secrets, dangerous functions, dependency vulnerabilities
 - **Code Quality**: Large files, complexity analysis, TODO/FIXME tracking, empty catch blocks
 - **Language-Specific**: Widget analysis (Flutter), state management, performance optimizations
@@ -133,6 +146,7 @@ autoreview --no-quality
 ## Output
 
 All reports are saved to `review_reports/` directory with timestamps:
+
 - `review_report_TIMESTAMP.txt` - Main comprehensive report
 - Language-specific reports for each detected language
 - Timestamped for easy tracking and comparison
@@ -148,6 +162,7 @@ All reports are saved to `review_reports/` directory with timestamps:
 ## Advanced Usage
 
 ### Pre-commit Hook
+
 ```bash
 cp $CODE_REVIEW_TOOLS_DIR/pre-commit-hook.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
@@ -156,6 +171,7 @@ chmod +x .git/hooks/pre-commit
 ### CI/CD Integration
 
 **GitHub Actions:**
+
 ```yaml
 - name: Setup Code Review Tools
   run: |
@@ -167,7 +183,9 @@ chmod +x .git/hooks/pre-commit
 ```
 
 ### Custom Aliases
+
 Add to your shell configuration (after setting `CODE_REVIEW_TOOLS_DIR`):
+
 ```bash
 alias review="autoreview"
 alias review-pr="autoreview -t main"
@@ -177,6 +195,7 @@ alias review-dev="autoreview -t develop"
 ## Troubleshooting
 
 **Command not found?**
+
 ```bash
 # Check if environment variable is set
 echo $CODE_REVIEW_TOOLS_DIR
@@ -187,11 +206,13 @@ source ~/.bashrc  # or source ~/.zshrc
 ```
 
 **Permission issues?**
+
 ```bash
 chmod +x $CODE_REVIEW_TOOLS_DIR/*
 ```
 
 **Scripts not executable?**
+
 ```bash
 # Make all scripts executable
 chmod +x $CODE_REVIEW_TOOLS_DIR/*.sh
