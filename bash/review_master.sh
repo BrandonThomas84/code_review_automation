@@ -43,6 +43,7 @@ RUN_RUBY=false
 RUN_JS=false
 RUN_SECURITY=true
 RUN_QUALITY=true
+FULL_SCAN=false
 
 # Function to print colored output
 print_header() {
@@ -77,6 +78,7 @@ usage() {
     echo "  -f, --flutter           Run Flutter-specific analysis"
     echo "  -r, --ruby              Run Ruby-specific analysis"
     echo "  -j, --javascript        Run JavaScript/TypeScript analysis"
+    echo "  --full-scan             Scan entire codebase (default: only changed files)"
     echo "  --no-security           Skip security analysis"
     echo "  --no-quality            Skip quality analysis"
     echo "  --clean                 Clean up old report files and exit"
@@ -84,8 +86,8 @@ usage() {
     echo "  -h, --help              Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 -t develop -f                    # Analyze against develop with Flutter checks"
-    echo "  $0 --target main --verbose          # Verbose analysis against main"
+    echo "  $0 -t develop -f                    # Analyze changed files against develop with Flutter checks"
+    echo "  $0 --target main --full-scan        # Full codebase scan against main"
     echo "  $0 -o /tmp/reports                  # Custom output directory"
     echo "  $0 --clean                          # Clean up old reports"
 }
@@ -172,6 +174,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -j|--javascript)
             RUN_JS=true
+            shift
+            ;;
+        --full-scan)
+            FULL_SCAN=true
             shift
             ;;
         --no-security)
@@ -299,14 +305,25 @@ main() {
     print_header "🔍 RUNNING DETAILED CODE ANALYSIS"
     if [[ -f "$SCRIPT_DIR/quick_review.py" ]] && command -v python3 &> /dev/null; then
         PYTHON_REPORT="$OUTPUT_DIR/python_analysis_$TIMESTAMP.json"
-        python3 "$SCRIPT_DIR/quick_review.py" -t "$TARGET_BRANCH" --json > "$PYTHON_REPORT" 2>&1
+
+        # Build command with optional --full-scan flag
+        PYTHON_CMD="python3 \"$SCRIPT_DIR/quick_review.py\" -t \"$TARGET_BRANCH\" --json"
+        if [[ "$FULL_SCAN" == true ]]; then
+            PYTHON_CMD="$PYTHON_CMD --full-scan"
+        fi
+
+        eval "$PYTHON_CMD" > "$PYTHON_REPORT" 2>&1
 
         # Add summary to main report
         {
             echo ""
             echo "DETAILED CODE ANALYSIS SUMMARY"
             echo "=============================="
-            python3 "$SCRIPT_DIR/quick_review.py" -t "$TARGET_BRANCH"
+            SUMMARY_CMD="python3 \"$SCRIPT_DIR/quick_review.py\" -t \"$TARGET_BRANCH\""
+            if [[ "$FULL_SCAN" == true ]]; then
+                SUMMARY_CMD="$SUMMARY_CMD --full-scan"
+            fi
+            eval "$SUMMARY_CMD"
         } >> "$MAIN_REPORT" 2>&1
 
         print_success "Detailed analysis completed - JSON report: $PYTHON_REPORT"

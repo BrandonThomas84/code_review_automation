@@ -1,0 +1,89 @@
+name: Code Review
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - staging
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper diff
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Download code-review binary
+        run: |
+          # Download the latest release
+          RELEASE_URL=$(curl -s https://api.github.com/repos/BrandonThomas84/code-review-automation/releases/latest | grep browser_download_url | grep linux-amd64 | cut -d '"' -f 4)
+          wget -q $RELEASE_URL -O code-review
+          chmod +x code-review
+
+      - name: Run code review
+        id: review
+        run: |
+          ./code-review -t ${{ github.base_ref }} --json > review_report.json
+          cat review_report.json
+
+      - name: Comment PR with results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('review_report.json', 'utf8'));
+            
+            let comment = '## 📋 Code Review Results\n\n';
+            comment += `**Files Changed:** ${report.summary.total_files}\n`;
+            comment += `**Total Issues:** ${report.summary.total_issues}\n`;
+            comment += `🔴 **High:** ${report.summary.high_severity} | `;
+            comment += `🟡 **Medium:** ${report.summary.medium_severity} | `;
+            comment += `🟢 **Low:** ${report.summary.low_severity}\n\n`;
+            
+            if (report.issues.length > 0) {
+              comment += '### Issues Found:\n';
+              report.issues.forEach((issue, i) => {
+                comment += `${i + 1}. **[${issue.severity.toUpperCase()}]** ${issue.message}\n`;
+                comment += `   - File: \`${issue.file}\`\n`;
+                if (issue.line) {
+                  comment += `   - Line: ${issue.line}\n`;
+                }
+              });
+            } else {
+              comment += '✅ No issues found!\n';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-review-report
+          path: review_report.json
+
+      - name: Fail if high severity issues
+        if: failure()
+        run: |
+          REPORT=$(cat review_report.json)
+          HIGH_ISSUES=$(echo $REPORT | jq '.summary.high_severity')
+          if [ "$HIGH_ISSUES" -gt 0 ]; then
+            echo "❌ High severity issues found!"
+            exit 1
+          fi
+

@@ -40,6 +40,10 @@ echo 'set -gx CODE_REVIEW_TOOLS_DIR "/path/to/code-review-automation"' >> ~/.con
 
 Replace `/path/to/code-review-automation` with the actual path where you cloned the repository.
 
+### Important: Target Branch is Required
+
+The `-t` or `--target` flag is **required** when running autoreview. This specifies which branch to compare your changes against.
+
 ### 4. Verify Installation
 
 Test from any directory:
@@ -59,16 +63,28 @@ That's it! The tool will automatically detect your project languages and run com
 
 ## Usage Examples
 
-### Basic Review
+### Basic Review (Changed Files Only)
 ```bash
-# Review with ticket/branch name
+# Review changed files with ticket/branch name
 autoreview -t FERN-12345-Some-title
 
-# Review against specific branch
+# Review changed files against specific branch
 autoreview -t develop
 
 # Verbose output for detailed review
 autoreview -v
+```
+
+### Full Codebase Scan
+```bash
+# Scan entire codebase instead of just changed files
+autoreview --full-scan
+
+# Full scan against specific branch
+autoreview -t develop --full-scan
+
+# Full scan with verbose output
+autoreview --full-scan -v
 ```
 
 ### Language-Specific Analysis

@@ -18,27 +18,81 @@ class CodeReviewAnalyzer:
         self.repo_path = Path(repo_path)
         self.issues = []
         
-    def analyze_git_diff(self, target_branch: str = "main") -> Dict[str, Any]:
+    def analyze_git_diff(self, target_branch: str) -> Dict[str, Any]:
         """Analyze git diff for common issues"""
         try:
-            # Get diff
-            result = subprocess.run(
-                ["git", "diff", f"{target_branch}..HEAD", "--name-only"],
+            # First, try to fetch the target branch to ensure it's up to date
+            subprocess.run(
+                ["git", "fetch", "origin", target_branch],
                 capture_output=True, text=True, cwd=self.repo_path
             )
-            changed_files = result.stdout.strip().split('\n') if result.stdout.strip() else []
-            
+
+            # Get list of changed files between target branch and current branch
+            result = subprocess.run(
+                ["git", "diff", "--name-only", f"origin/{target_branch}...HEAD"],
+                capture_output=True, text=True, cwd=self.repo_path
+            )
+
+            if result.returncode != 0:
+                # Fallback: try without origin prefix
+                result = subprocess.run(
+                    ["git", "diff", "--name-only", f"{target_branch}...HEAD"],
+                    capture_output=True, text=True, cwd=self.repo_path
+                )
+
+            changed_files = [f for f in result.stdout.strip().split('\n') if f]
+
             # Get detailed diff
             result = subprocess.run(
-                ["git", "diff", f"{target_branch}..HEAD"],
+                ["git", "diff", f"origin/{target_branch}...HEAD"],
                 capture_output=True, text=True, cwd=self.repo_path
             )
+
+            if result.returncode != 0:
+                # Fallback: try without origin prefix
+                result = subprocess.run(
+                    ["git", "diff", f"{target_branch}...HEAD"],
+                    capture_output=True, text=True, cwd=self.repo_path
+                )
+
             diff_content = result.stdout
-            
+
             return {
                 "changed_files": changed_files,
                 "diff_content": diff_content,
                 "file_count": len(changed_files)
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def analyze_full_codebase(self) -> Dict[str, Any]:
+        """Analyze entire codebase for issues"""
+        try:
+            # Get all source files
+            code_extensions = ['.py', '.js', '.ts', '.jsx', '.tsx', '.dart', '.rb', '.php', '.java', '.kt']
+            all_files = []
+
+            for ext in code_extensions:
+                result = subprocess.run(
+                    ["find", ".", "-name", f"*{ext}", "-type", "f"],
+                    capture_output=True, text=True, cwd=self.repo_path
+                )
+                if result.stdout.strip():
+                    all_files.extend(result.stdout.strip().split('\n'))
+
+            # Read all files content
+            full_content = ""
+            for file_path in all_files:
+                try:
+                    with open(self.repo_path / file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        full_content += f.read() + "\n"
+                except:
+                    pass
+
+            return {
+                "changed_files": all_files,
+                "diff_content": full_content,
+                "file_count": len(all_files)
             }
         except Exception as e:
             return {"error": str(e)}
@@ -141,19 +195,22 @@ class CodeReviewAnalyzer:
         
         return issues
     
-    def generate_report(self, target_branch: str = "main") -> Dict[str, Any]:
+    def generate_report(self, target_branch: str, full_scan: bool = False) -> Dict[str, Any]:
         """Generate comprehensive review report"""
-        print("🔍 Analyzing code changes...")
-        
-        # Get git diff
-        git_analysis = self.analyze_git_diff(target_branch)
+        if full_scan:
+            print("🔍 Scanning entire codebase...")
+            git_analysis = self.analyze_full_codebase()
+        else:
+            print(f"🔍 Analyzing changes against {target_branch}...")
+            git_analysis = self.analyze_git_diff(target_branch)
+
         if "error" in git_analysis:
             return {"error": git_analysis["error"]}
-        
+
         changed_files = git_analysis["changed_files"]
         diff_content = git_analysis["diff_content"]
-        
-        print(f"📁 Found {len(changed_files)} changed files")
+
+        print(f"📁 Found {len(changed_files)} files to analyze")
         
         # Run all checks
         security_issues = self.check_security_issues(diff_content)
@@ -215,14 +272,15 @@ class CodeReviewAnalyzer:
 
 def main():
     parser = argparse.ArgumentParser(description="Quick Code Review Automation")
-    parser.add_argument("--target", "-t", default="main", help="Target branch to compare against")
+    parser.add_argument("--target", "-t", required=True, help="Target branch to compare against (required)")
     parser.add_argument("--json", "-j", action="store_true", help="Output as JSON")
-    
+    parser.add_argument("--full-scan", action="store_true", help="Scan entire codebase instead of just changed files")
+
     args = parser.parse_args()
 
     analyzer = CodeReviewAnalyzer(".")  # Use current directory
-    report = analyzer.generate_report(args.target)
-    
+    report = analyzer.generate_report(args.target, full_scan=args.full_scan)
+
     if args.json:
         print(json.dumps(report, indent=2))
     else:
