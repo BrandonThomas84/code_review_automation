@@ -1,16 +1,21 @@
 {
   "cSpell.words": [
     "autoreview",
+    "autoreviewignore",
     "byebug",
     "cellspacing",
     "fatih",
     "GOARCH",
+    "htmlcov",
     "inconshreveable",
     "isatty",
     "mattn",
     "pflag",
+    "println",
     "pubspec",
+    "pycache",
     "pyproject",
-    "softprops"
+    "softprops",
+    "venv"
   ]
 }

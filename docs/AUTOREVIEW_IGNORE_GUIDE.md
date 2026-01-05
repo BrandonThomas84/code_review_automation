@@ -14,7 +14,7 @@ touch .autoreview-ignore
 
 Each line in `.autoreview-ignore` specifies a pattern to ignore:
 
-```
+```text
 # Comments start with #
 # Empty lines are ignored
 
@@ -41,40 +41,49 @@ tests/fixtures/*
 ## Pattern Types
 
 ### 1. Exact File Matches
-```
+
+```text
 config.json
 src/utils.py
 ```
+
 Ignores files with exact paths.
 
 ### 2. Wildcard Patterns
-```
+
+```text
 *.min.js
 *.test.py
 *.generated.go
 ```
+
 Uses standard glob patterns with `*` and `?`.
 
 ### 3. Directory Patterns
-```
+
+```text
 node_modules/
 dist/
 .venv/
 ```
+
 End with `/` to ignore entire directories and their contents.
 
 ### 4. Glob Patterns
-```
+
+```text
 build/*
 tests/fixtures/*
 src/**/*.generated.go
 ```
+
 Supports `*` for any characters and `**` for nested directories.
 
 ## Examples
 
 ### Python Project
-```
+
+```text
 # Virtual environments
 .venv/
 venv/
@@ -98,7 +107,8 @@ site-packages/
 ```
 
 ### JavaScript/Node Project
-```
+
+```text
 # Dependencies
 node_modules/
 package-lock.json
@@ -122,7 +132,8 @@ build/
 ```
 
 ### Go Project
-```
+
+```text
 # Build output
 bin/
 dist/
@@ -140,7 +151,8 @@ vendor/
 ```
 
 ### General
-```
+
+```text
 # Compiled files
 *.o
 *.a
@@ -165,7 +177,7 @@ Thumbs.db
 
 Lines starting with `#` are treated as comments:
 
-```
+```text
 # This is a comment
 # Ignore all test files
 *.test.js
@@ -224,16 +236,19 @@ The verbose output will show which files are being analyzed.
 ## Troubleshooting
 
 ### Files are still being analyzed
+
 - Check that `.autoreview-ignore` is in the repository root
 - Verify the pattern syntax is correct
 - Run with `-v` flag to see which files are being analyzed
 
 ### Too many files are being ignored
+
 - Review your patterns for overly broad matches
 - Use more specific patterns
 - Add comments to document why each pattern exists
 
 ### Pattern not working
+
 - Ensure no leading/trailing spaces in patterns
 - Check that directory patterns end with `/`
 - Verify the file path matches the pattern exactly
@@ -241,7 +256,8 @@ The verbose output will show which files are being analyzed.
 ## Examples in Action
 
 ### Example 1: Ignore generated files
-```
+
+```text
 # .autoreview-ignore
 *.generated.go
 *.pb.go
@@ -249,7 +265,8 @@ The verbose output will show which files are being analyzed.
 ```
 
 ### Example 2: Ignore vendor and build directories
-```
+
+```text
 # .autoreview-ignore
 vendor/
 node_modules/
@@ -258,7 +275,8 @@ build/
 ```
 
 ### Example 3: Ignore test files and fixtures
-```
+
+```text
 # .autoreview-ignore
 *.test.js
 *.test.py
@@ -276,4 +294,3 @@ The `.autoreview-ignore` file is automatically respected when running in GitHub 
 ```
 
 No additional configuration needed!
-
