@@ -49,11 +49,20 @@ func runReview(cmd *cobra.Command, args []string) error {
 		color.Blue("[INFO] Starting code review analysis...")
 		color.Blue("[INFO] Target branch: %s", targetBranch)
 		color.Blue("[INFO] Full scan: %v", fullScan)
+		color.Blue("[INFO] Output directory: %s", outputDir)
+		color.Blue("[INFO] JSON output: %v", jsonOutput)
+		color.Blue("[INFO] Email: %s", emailTo)
+
+		color.Blue("[INFO] creating output directory: %s", outputDir)
 	}
 
 	// Create output directory
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	if verbose {
+		color.Blue("[INFO] Getting current working directory...")
 	}
 
 	// Get current working directory
@@ -62,20 +71,40 @@ func runReview(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get current directory: %w", err)
 	}
 
+	if verbose {
+		color.Blue("[INFO] Repository path: %s", repoPath)
+	}
+
 	// Run the review
-	analyzer := review.NewAnalyzer(repoPath)
+	analyzer := review.NewAnalyzer(repoPath, verbose)
 	report, err := analyzer.GenerateReport(targetBranch, fullScan)
 	if err != nil {
 		return fmt.Errorf("review failed: %w", err)
 	}
 
+	if verbose {
+		color.Blue("[INFO] Review complete")
+	}
+
 	// Output results
 	if jsonOutput {
+		if verbose {
+			color.Blue("[INFO] Outputting JSON...")
+		}
+
 		if err := report.OutputJSON(os.Stdout); err != nil {
 			return fmt.Errorf("failed to output JSON: %w", err)
 		}
 	} else {
+		if verbose {
+			color.Blue("[INFO] Outputting report...")
+		}
+
 		report.PrintReport()
+	}
+
+	if verbose {
+		color.Blue("[INFO] Saving report to file...")
 	}
 
 	// Save report to file
@@ -86,6 +115,10 @@ func runReview(cmd *cobra.Command, args []string) error {
 		color.Green("[SUCCESS] Report saved to: %s", reportPath)
 	}
 
+	if verbose {
+		color.Blue("[INFO] Sending email...")
+	}
+
 	// Send email if requested
 	if emailTo != "" {
 		if err := sendEmailReport(report, emailTo); err != nil {
@@ -93,6 +126,8 @@ func runReview(cmd *cobra.Command, args []string) error {
 		} else if verbose {
 			color.Green("[SUCCESS] Email sent to: %s", emailTo)
 		}
+	} else if verbose {
+		color.Blue("[INFO] No email requested")
 	}
 
 	return nil
@@ -103,4 +138,3 @@ func sendEmailReport(report *review.Report, emailTo string) error {
 	color.Blue("[INFO] Email functionality coming soon")
 	return nil
 }
-

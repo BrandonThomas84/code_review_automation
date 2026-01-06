@@ -51,7 +51,7 @@ func TestPythonQuality_PrintStatement(t *testing.T) {
 def hello():
     print("Hello World")
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -68,7 +68,7 @@ import pdb
 pdb.set_trace()
 breakpoint()
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -84,7 +84,7 @@ func TestPythonSecurity_EvalUsage(t *testing.T) {
 result = eval(user_input)
 exec(code)
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -100,7 +100,7 @@ func TestPythonSecurity_SubprocessShell(t *testing.T) {
 import subprocess
 subprocess.run(cmd, shell=True)
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -118,7 +118,7 @@ try:
 except:
     pass
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -134,7 +134,7 @@ func TestPythonSecurity_PickleLoad(t *testing.T) {
 import pickle
 data = pickle.load(file)
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -150,7 +150,7 @@ func TestPythonSecurity_SQLInjection(t *testing.T) {
 cursor.execute("SELECT * FROM users WHERE id = %s" % user_id)
 cursor.execute(f"SELECT * FROM users WHERE name = '{name}'")
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.py"}
 	analyzer.checkPythonQuality("test.py", report)
@@ -169,7 +169,7 @@ function hello() {
     console.log("Hello");
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.js"}
 	analyzer.checkJavaScriptQuality("test.js", report)
@@ -187,7 +187,7 @@ function test() {
     return true;
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.js"}
 	analyzer.checkJavaScriptQuality("test.js", report)
@@ -202,7 +202,7 @@ func TestJavaScriptSecurity_Eval(t *testing.T) {
 	createTestFile(t, tmpDir, "test.js", `
 eval(userInput);
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.js"}
 	analyzer.checkJavaScriptQuality("test.js", report)
@@ -217,7 +217,7 @@ func TestJavaScriptSecurity_InnerHTML(t *testing.T) {
 	createTestFile(t, tmpDir, "test.js", `
 element.innerHTML = userContent;
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.js"}
 	analyzer.checkJavaScriptQuality("test.js", report)
@@ -232,7 +232,7 @@ func TestJavaScriptSecurity_SSLDisabled(t *testing.T) {
 	createTestFile(t, tmpDir, "test.js", `
 const options = { rejectUnauthorized: false };
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.js"}
 	analyzer.checkJavaScriptQuality("test.js", report)
@@ -251,7 +251,7 @@ function process(data: any): any {
     return data;
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.ts"}
 	analyzer.checkTypeScriptQuality("test.ts", report)
@@ -267,7 +267,7 @@ func TestTypeScriptQuality_TsIgnore(t *testing.T) {
 // @ts-ignore
 const x: string = 123;
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.ts"}
 	analyzer.checkTypeScriptQuality("test.ts", report)
@@ -282,7 +282,7 @@ func TestTypeScriptSecurity_FunctionConstructor(t *testing.T) {
 	createTestFile(t, tmpDir, "test.ts", `
 const fn = new Function(userCode);
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.ts"}
 	analyzer.checkTypeScriptQuality("test.ts", report)
@@ -302,7 +302,7 @@ def debug_method
   byebug
 end
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.rb"}
 	analyzer.checkRubyQuality("test.rb", report)
@@ -318,7 +318,7 @@ func TestRubySecurity_Eval(t *testing.T) {
 result = eval(user_input)
 instance_eval(code)
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.rb"}
 	analyzer.checkRubyQuality("test.rb", report)
@@ -333,7 +333,7 @@ func TestRubySecurity_UnsafeYAML(t *testing.T) {
 	createTestFile(t, tmpDir, "test.rb", `
 data = YAML.load(user_input)
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.rb"}
 	analyzer.checkRubyQuality("test.rb", report)
@@ -348,7 +348,7 @@ func TestRubySecurity_HTMLSafe(t *testing.T) {
 	createTestFile(t, tmpDir, "test.rb", `
 <%= user_input.html_safe %>
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.rb"}
 	analyzer.checkRubyQuality("test.rb", report)
@@ -368,7 +368,7 @@ void main() {
   debugPrint("Debug");
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.dart"}
 	analyzer.checkDartQuality("test.dart", report)
@@ -384,7 +384,7 @@ func TestDartQuality_DynamicType(t *testing.T) {
 dynamic data = fetchData();
 List<dynamic> items = [];
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.dart"}
 	analyzer.checkDartQuality("test.dart", report)
@@ -400,7 +400,7 @@ func TestDartSecurity_HardcodedCredentials(t *testing.T) {
 const apiKey = "sk_live_12345";
 const password = "secret123";
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.dart"}
 	analyzer.checkDartQuality("test.dart", report)
@@ -418,7 +418,7 @@ func TestPHPQuality_VarDump(t *testing.T) {
 var_dump($data);
 print_r($array);
 ?>`)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.php"}
 	analyzer.checkPHPQuality("test.php", report)
@@ -433,7 +433,7 @@ func TestPHPSecurity_Eval(t *testing.T) {
 	createTestFile(t, tmpDir, "test.php", `<?php
 eval($_POST['code']);
 ?>`)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.php"}
 	analyzer.checkPHPQuality("test.php", report)
@@ -448,7 +448,7 @@ func TestPHPSecurity_SQLInjection(t *testing.T) {
 	createTestFile(t, tmpDir, "test.php", `<?php
 $result = mysql_query("SELECT * FROM users WHERE id = " . $_GET['id']);
 ?>`)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.php"}
 	analyzer.checkPHPQuality("test.php", report)
@@ -463,7 +463,7 @@ func TestPHPSecurity_XSS(t *testing.T) {
 	createTestFile(t, tmpDir, "test.php", `<?php
 echo $_GET['name'];
 ?>`)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"test.php"}
 	analyzer.checkPHPQuality("test.php", report)
@@ -484,7 +484,7 @@ public class Test {
     }
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"Test.java"}
 	analyzer.checkJavaKotlinQuality("Test.java", report)
@@ -503,7 +503,7 @@ try {
     e.printStackTrace();
 }
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"Test.java"}
 	analyzer.checkJavaKotlinQuality("Test.java", report)
@@ -518,7 +518,7 @@ func TestJavaSecurity_ProcessExecution(t *testing.T) {
 	createTestFile(t, tmpDir, "Test.java", `
 Runtime.getRuntime().exec(command);
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"Test.java"}
 	analyzer.checkJavaKotlinQuality("Test.java", report)
@@ -533,7 +533,7 @@ func TestJavaSecurity_WeakCrypto(t *testing.T) {
 	createTestFile(t, tmpDir, "Test.java", `
 MessageDigest md = MessageDigest.getInstance("MD5");
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"Test.java"}
 	analyzer.checkJavaKotlinQuality("Test.java", report)
@@ -549,7 +549,7 @@ func TestKotlinQuality_ForceUnwrap(t *testing.T) {
 val name = user!!.name
 val length = text!!.length
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 	report := NewReport()
 	report.ChangedFiles = []string{"Test.kt"}
 	analyzer.checkJavaKotlinQuality("Test.kt", report)
@@ -569,7 +569,7 @@ vendor/
 *.min.js
 test_data/
 `)
-	analyzer := NewAnalyzer(tmpDir)
+	analyzer := NewAnalyzer(tmpDir, false)
 
 	tests := []struct {
 		path     string

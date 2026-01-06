@@ -146,6 +146,28 @@ func (a *Analyzer) checkRubyQuality(file string, report *Report) {
 				Line:     i + 1,
 			})
 		}
+
+		// Rescue without specific exception
+		if strings.Contains(line, "rescue StandardError") || strings.Contains(line, "rescue =>") {
+			report.AddIssue(Issue{
+				Type:     "error_handling",
+				Severity: "medium",
+				Message:  "Generic rescue clause",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// Empty rescue blocks
+		if strings.Contains(line, "rescue") && strings.Contains(line, "end") {
+			report.AddIssue(Issue{
+				Type:     "error_handling",
+				Severity: "medium",
+				Message:  "Empty rescue block",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
 	}
 
 	// Continue with more security checks in a helper function
@@ -275,6 +297,73 @@ func (a *Analyzer) checkRubySecurityExtended(file string, contentStr string, lin
 				Type:     "security",
 				Severity: "high",
 				Message:  "CSRF protection disabled - ensure this is intentional and properly secured",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// SECURITY: Missing strong parameters
+		if strings.Contains(line, ".params[") && !strings.Contains(line, ".permit(") {
+			report.AddIssue(Issue{
+				Type:     "security",
+				Severity: "high",
+				Message:  "Open parameters detected - use strong parameters to whitelist allowed attributes",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// N+1 query patterns
+		if strings.Contains(line, ".each") && strings.Contains(line, ".find") {
+			report.AddIssue(Issue{
+				Type:     "performance",
+				Severity: "high",
+				Message:  "Potential N+1 query detected",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// Missing validations in models
+		if strings.Contains(file, "model") && strings.Contains(line, "class") && !strings.Contains(line, "validates") {
+			report.AddIssue(Issue{
+				Type:     "rails_structure",
+				Severity: "medium",
+				Message:  "Model without validations",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// Callback hell
+		callbackCount := strings.Count(contentStr, "before_") + strings.Count(contentStr, "after_") + strings.Count(contentStr, "around_")
+		if callbackCount > 5 {
+			report.AddIssue(Issue{
+				Type:     "rails_structure",
+				Severity: "medium",
+				Message:  "Too many callbacks detected",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// Inefficient queries in loops
+		if strings.Contains(line, ".each") && (strings.Contains(line, ".find") || strings.Contains(line, ".where") || strings.Contains(line, ".create") || strings.Contains(line, ".update")) {
+			report.AddIssue(Issue{
+				Type:     "performance",
+				Severity: "medium",
+				Message:  "Database query inside loop",
+				File:     file,
+				Line:     i + 1,
+			})
+		}
+
+		// Inefficient string concatenation
+		if strings.Contains(line, "+=") && (strings.Contains(line, "\"") || strings.Contains(line, "'")) {
+			report.AddIssue(Issue{
+				Type:     "performance",
+				Severity: "low",
+				Message:  "String concatenation with +=",
 				File:     file,
 				Line:     i + 1,
 			})

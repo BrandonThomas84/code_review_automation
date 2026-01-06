@@ -87,7 +87,7 @@ func (a *Analyzer) checkJavaScriptQuality(file string, report *Report) {
 		}
 
 		// SECURITY: Check for innerHTML (XSS vulnerability)
-		if strings.Contains(line, ".innerHTML") {
+		if strings.Contains(line, ".innerHTML") || strings.Contains(line, ".outerHTML") {
 			report.AddIssue(Issue{
 				Type:     "security",
 				Severity: "high",
@@ -163,4 +163,3 @@ func (a *Analyzer) checkJavaScriptQuality(file string, report *Report) {
 		})
 	}
 }
-

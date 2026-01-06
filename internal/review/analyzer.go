@@ -6,17 +6,21 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type Analyzer struct {
 	repoPath       string
 	ignorePatterns []string
+	verbose        bool
 }
 
-func NewAnalyzer(repoPath string) *Analyzer {
+func NewAnalyzer(repoPath string, verbose bool) *Analyzer {
 	analyzer := &Analyzer{
 		repoPath:       repoPath,
 		ignorePatterns: []string{},
+		verbose:        verbose,
 	}
 	// Load ignore patterns from .autoreview-ignore file
 	analyzer.loadIgnorePatterns()
@@ -25,11 +29,19 @@ func NewAnalyzer(repoPath string) *Analyzer {
 
 // loadIgnorePatterns reads the .autoreview-ignore file and loads patterns
 func (a *Analyzer) loadIgnorePatterns() {
+	if a.verbose {
+		color.Blue("[INFO] Loading ignore patterns...")
+	}
+
 	ignoreFilePath := filepath.Join(a.repoPath, ".autoreview-ignore")
 	content, err := os.ReadFile(ignoreFilePath)
 	if err != nil {
 		// File doesn't exist or can't be read, which is fine
 		return
+	}
+
+	if a.verbose {
+		color.Blue("[INFO] Found ignore file")
 	}
 
 	lines := strings.Split(string(content), "\n")
@@ -45,34 +57,64 @@ func (a *Analyzer) loadIgnorePatterns() {
 
 // shouldIgnoreFile checks if a file matches any ignore patterns
 func (a *Analyzer) shouldIgnoreFile(filePath string) bool {
+	if a.verbose {
+		color.Blue("[INFO] Checking if file should be ignored: %s", filePath)
+	}
+
 	for _, pattern := range a.ignorePatterns {
 		// Check for exact match
 		if filePath == pattern {
+			if a.verbose {
+				color.Blue("[INFO] File matches ignore pattern: %s", pattern)
+			}
 			return true
 		}
 		// Check if pattern matches using filepath.Match (supports wildcards)
 		if matched, err := filepath.Match(pattern, filePath); err == nil && matched {
+			if a.verbose {
+				color.Blue("[INFO] File matches ignore pattern: %s", pattern)
+			}
 			return true
 		}
 		// Check if the file is within an ignored directory
 		if strings.HasSuffix(pattern, "/") {
 			dirPattern := strings.TrimSuffix(pattern, "/")
 			if strings.HasPrefix(filePath, dirPattern+"/") {
+				if a.verbose {
+					color.Blue("[INFO] File is within ignored directory:", pattern)
+				}
 				return true
 			}
 		}
 	}
+
+	if a.verbose {
+		color.Blue("[INFO] File should NOT be ignored")
+	}
+
 	return false
 }
 
 func (a *Analyzer) GenerateReport(targetBranch string, fullScan bool) (*Report, error) {
+	if a.verbose {
+		color.Blue("[INFO] Generating report...")
+	}
+
 	report := NewReport()
 
 	if fullScan {
+		if a.verbose {
+			color.Blue("[INFO] Full scan requested")
+		}
+
 		if err := a.analyzeFullCodebase(report); err != nil {
 			return nil, fmt.Errorf("full codebase analysis failed: %w", err)
 		}
 	} else {
+		if a.verbose {
+			color.Blue("[INFO] Analyzing git diff")
+		}
+
 		if err := a.analyzeGitDiff(targetBranch, report); err != nil {
 			return nil, fmt.Errorf("git diff analysis failed: %w", err)
 		}
@@ -91,18 +133,31 @@ func (a *Analyzer) analyzeGitDiff(targetBranch string, report *Report) error {
 	cmd.Dir = a.repoPath
 	cmd.Run() // Ignore error, branch might be local
 
+	if a.verbose {
+		color.Blue("[INFO] Getting changed files...")
+	}
+
 	// Get changed files
-	cmd = exec.Command("git", "diff", "--name-only", fmt.Sprintf("origin/%s...HEAD", targetBranch))
+	cmd = exec.Command("git", "diff", "--name-only", fmt.Sprintf("origin/%s..HEAD", targetBranch))
+
+	if a.verbose {
+		color.Blue("[INFO] Git command: %s\n", cmd.String())
+	}
+
 	cmd.Dir = a.repoPath
 	output, err := cmd.Output()
 	if err != nil {
 		// Fallback without origin
-		cmd = exec.Command("git", "diff", "--name-only", fmt.Sprintf("%s...HEAD", targetBranch))
+		cmd = exec.Command("git", "diff", "--name-only", fmt.Sprintf("%s..HEAD", targetBranch))
 		cmd.Dir = a.repoPath
 		output, err = cmd.Output()
 		if err != nil {
 			return fmt.Errorf("failed to get changed files: %w", err)
 		}
+	}
+
+	if a.verbose {
+		color.Blue("[INFO] Found changed files")
 	}
 
 	files := strings.Split(strings.TrimSpace(string(output)), "\n")
@@ -112,11 +167,20 @@ func (a *Analyzer) analyzeGitDiff(targetBranch string, report *Report) error {
 		}
 	}
 
+	if a.verbose {
+		color.Blue("[INFO] Done analyzing git diff")
+	}
+
 	return nil
 }
 
 func (a *Analyzer) analyzeFullCodebase(report *Report) error {
 	codeExtensions := []string{".py", ".js", ".ts", ".jsx", ".tsx", ".dart", ".rb", ".php", ".java", ".kt"}
+
+	if a.verbose {
+		color.Blue("[INFO] Analyzing full codebase")
+		color.Blue("[INFO] Searching for files with extensions:", codeExtensions)
+	}
 
 	for _, ext := range codeExtensions {
 		cmd := exec.Command("find", ".", "-name", fmt.Sprintf("*%s", ext), "-type", "f")
@@ -132,10 +196,18 @@ func (a *Analyzer) analyzeFullCodebase(report *Report) error {
 		}
 	}
 
+	if a.verbose {
+		color.Blue("[INFO] Done analyzing full codebase")
+	}
+
 	return nil
 }
 
 func (a *Analyzer) runSecurityChecks(report *Report) {
+	if a.verbose {
+		color.Blue("[INFO] Running security checks")
+	}
+
 	// Check for common security issues
 	patterns := map[string]string{
 		"password":    "Hardcoded password detected",
@@ -145,7 +217,15 @@ func (a *Analyzer) runSecurityChecks(report *Report) {
 		"aws_access":  "AWS credentials in code",
 	}
 
+	if a.verbose {
+		color.Blue("[INFO] Checking for security issues...")
+	}
+
 	for _, file := range report.ChangedFiles {
+		if a.verbose {
+			color.Blue("[INFO] Checking file for security issues: %s", file)
+		}
+
 		filePath := filepath.Join(a.repoPath, file)
 		content, err := os.ReadFile(filePath)
 		if err != nil {
@@ -163,10 +243,22 @@ func (a *Analyzer) runSecurityChecks(report *Report) {
 				})
 			}
 		}
+
+		if a.verbose {
+			color.Blue("[INFO] Done checking for security issues in file: %s", file)
+		}
+	}
+
+	if a.verbose {
+		color.Blue("[INFO] Done running security checks")
 	}
 }
 
 func (a *Analyzer) runQualityChecks(report *Report) {
+	if a.verbose {
+		color.Blue("[INFO] Running quality checks")
+	}
+
 	// Check for code quality issues
 	for _, file := range report.ChangedFiles {
 		switch {
