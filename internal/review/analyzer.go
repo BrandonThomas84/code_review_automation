@@ -14,6 +14,7 @@ type Analyzer struct {
 	repoPath       string
 	ignorePatterns []string
 	verbose        bool
+	targetBranch   string // Store for use in security checks
 }
 
 func NewAnalyzer(repoPath string, verbose bool) *Analyzer {
@@ -100,6 +101,9 @@ func (a *Analyzer) GenerateReport(targetBranch string, fullScan bool) (*Report, 
 		color.Blue("[INFO] Generating report...")
 	}
 
+	// Store target branch for use in security checks
+	a.targetBranch = targetBranch
+
 	report := NewReport()
 
 	if fullScan {
@@ -110,6 +114,8 @@ func (a *Analyzer) GenerateReport(targetBranch string, fullScan bool) (*Report, 
 		if err := a.analyzeFullCodebase(report); err != nil {
 			return nil, fmt.Errorf("full codebase analysis failed: %w", err)
 		}
+		// Full scan uses old security checks (scans whole files)
+		a.runSecurityChecks(report)
 	} else {
 		if a.verbose {
 			color.Blue("[INFO] Analyzing git diff")
@@ -118,10 +124,11 @@ func (a *Analyzer) GenerateReport(targetBranch string, fullScan bool) (*Report, 
 		if err := a.analyzeGitDiff(targetBranch, report); err != nil {
 			return nil, fmt.Errorf("git diff analysis failed: %w", err)
 		}
+		// Diff mode uses improved security checks (changed lines only)
+		a.RunSecurityChecksV2(report, targetBranch)
 	}
 
-	// Run checks
-	a.runSecurityChecks(report)
+	// Run quality checks
 	a.runQualityChecks(report)
 
 	return report, nil
